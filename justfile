@@ -22,6 +22,13 @@ sim:
 wave: sim
     cd {{sim_dir}} && {{gtkwave}} {{project_name}}_tb.fst
 
+# Generate logic schematic SVG
+schematic:
+    mkdir -p {{build_dir}}
+    yosys -p "prep -top {{project_name}}; write_json {{build_dir}}/{{project_name}}.json" {{rtl_dir}}/*.v
+    netlistsvg {{build_dir}}/{{project_name}}.json -o {{build_dir}}/{{project_name}}_schematic.svg
+    @echo "Schematic generated at {{build_dir}}/{{project_name}}_schematic.svg"
+
 # Generate Vivado project
 project:
     vivado -mode batch -source scripts/create_project.tcl

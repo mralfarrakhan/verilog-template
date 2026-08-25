@@ -6,5 +6,6 @@
     iverilog
     yosys
     gtkwave
+    netlistsvg
   ];
 }

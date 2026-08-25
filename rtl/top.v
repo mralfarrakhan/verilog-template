@@ -1,17 +1,19 @@
 `timescale 1ns / 1ps
 
 module top (
-    input  wire clk,
-    input  wire rst,
-    output reg  led
+    input a,
+    input b,
+    output ld0,
+    output ld1,
+    output ld2,
+    output ld3,
+    output ld4
 );
 
-    always @(posedge clk) begin
-        if (rst) begin
-            led <= 1'b0;
-        end else begin
-            led <= ~led;
-        end
-    end
+    assign ld0 = a & b;
+    assign ld1 = a | b;
+    assign ld2 = ~a;
+    assign ld3 = ~(a & b);
+    assign ld4 = a ^ b;
 
 endmodule
