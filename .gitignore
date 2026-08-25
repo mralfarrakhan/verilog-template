@@ -1,0 +1,33 @@
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+
+# Simulator output
+sim_build/
+*.vcd
+*.fst
+*.vvp
+
+# Vivado
+vivado/
+build/
+.Xil/
+*.jou
+*.log
+*.str
+*.pb
+*.wdf
+*.dir/
+usage_statistics_webtalk.html
+usage_statistics_webtalk.xml
+webtalk.jou
+webtalk.log
+webtalk_pn.xml
+a.out
