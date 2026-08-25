@@ -46,7 +46,7 @@ schematic:
 
 schematic-synth:
 	mkdir -p $(BUILD_DIR)
-	$(YOSYS) -p "synth_xilinx -top $(PROJECT_NAME); write_json $(BUILD_DIR)/$(PROJECT_NAME)_synth.json" $(RTL_SRCS)
+	$(YOSYS) -p "synth -top $(PROJECT_NAME); write_json $(BUILD_DIR)/$(PROJECT_NAME)_synth.json" $(RTL_SRCS)
 	$(NETLISTSVG) $(BUILD_DIR)/$(PROJECT_NAME)_synth.json -o $(BUILD_DIR)/$(PROJECT_NAME)_synth_schematic.svg
 	@echo "Synthesized schematic generated at $(BUILD_DIR)/$(PROJECT_NAME)_synth_schematic.svg"
 
