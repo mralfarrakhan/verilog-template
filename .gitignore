@@ -10,13 +10,11 @@ devenv.local.yaml
 .pre-commit-config.yaml
 
 # Simulator output
-sim_build/
 *.vcd
 *.fst
 *.vvp
 
 # Vivado
-vivado/
 build/
 .Xil/
 *.jou

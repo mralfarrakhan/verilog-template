@@ -3,8 +3,8 @@
 PROJECT_NAME = top
 RTL_DIR = rtl
 TB_DIR = tb
-SIM_DIR = sim_build
-VIVADO_DIR = vivado
+SIM_DIR = build/sim
+VIVADO_DIR = build/vivado
 BUILD_DIR = build
 
 # Tools

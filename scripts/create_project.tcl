@@ -1,7 +1,7 @@
 # Vivado create project script
 
 set project_name "vivado_project"
-set project_dir "./vivado"
+set project_dir "./build/vivado"
 set part_name "xc7a35tcpg236-1" ; # Change to your target part (e.g., Basys 3)
 
 # Create project
