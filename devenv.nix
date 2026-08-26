@@ -6,5 +6,6 @@
     yosys
     gtkwave
     netlistsvg
+    just
   ];
 }
