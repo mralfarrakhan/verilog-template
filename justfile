@@ -7,7 +7,7 @@ vvp := "vvp"
 gtkwave := "gtkwave"
 yosys := "yosys"
 netlistsvg := "netlistsvg"
-f4pga_image := "gcr.io/hdl-containers/conda/f4pga/xc7/z010"
+f4pga_image := "ghcr.io/hdl/conda/f4pga/xc7/z010:latest"
 project_name := "top"
 
 # Default target: list all available recipes
