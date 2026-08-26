@@ -1,10 +1,10 @@
-# Makefile for Verilog Simulation and Vivado Build
+# Makefile for Verilog Simulation and F4PGA Build
 
 PROJECT_NAME = top
 RTL_DIR = rtl
 TB_DIR = tb
 SIM_DIR = build/sim
-VIVADO_DIR = build/vivado
+F4PGA_DIR = build/f4pga
 BUILD_DIR = build
 
 # Tools
@@ -13,7 +13,9 @@ VVP = vvp
 GTKWAVE = gtkwave
 YOSYS = yosys
 NETLISTSVG = netlistsvg
-VIVADO = vivado
+
+# Docker settings for F4PGA
+F4PGA_IMAGE = gcr.io/hdl-containers/conda/f4pga/xc7/z010
 
 # Sources
 RTL_SRCS = $(wildcard $(RTL_DIR)/*.v $(RTL_DIR)/*.sv)
@@ -51,21 +53,22 @@ schematic-synth:
 	$(NETLISTSVG) $(BUILD_DIR)/$(PROJECT_NAME)_synth.json -o $(BUILD_DIR)/$(PROJECT_NAME)_synth_schematic.svg
 	@echo "Synthesized schematic generated at $(BUILD_DIR)/$(PROJECT_NAME)_synth_schematic.svg"
 
-# Vivado targets
-.PHONY: project bitstream vivado-clean
-
-project:
-	$(VIVADO) -mode batch -source scripts/create_project.tcl
+# F4PGA targets
+.PHONY: bitstream f4pga-clean
 
 bitstream:
-	$(VIVADO) -mode batch -source scripts/build.tcl
+	mkdir -p $(F4PGA_DIR)
+	docker run --rm -v $$(pwd):/wrk -w /wrk/$(F4PGA_DIR) $(F4PGA_IMAGE) \
+		bash -c "source /usr/local/conda/etc/profile.d/conda.sh || true && \
+		f4pga -m xc7 -c xc7z010-clg400-1 -t $(PROJECT_NAME) -p ../../xdc/top.xdc ../../rtl/top.v"
+	@echo "Bitstream generated in $(F4PGA_DIR)/build/$(PROJECT_NAME).bit"
 
 # Clean up
-clean: vivado-clean
+clean: f4pga-clean
 	rm -rf $(SIM_DIR)
 	rm -f *.jou *.log
 
-vivado-clean:
-	rm -rf $(VIVADO_DIR) $(BUILD_DIR)
+f4pga-clean:
+	rm -rf $(F4PGA_DIR)
 	rm -rf .Xil
 	rm -f *.jou *.log usage_statistics_webtalk.html usage_statistics_webtalk.xml
