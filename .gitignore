@@ -28,4 +28,5 @@ usage_statistics_webtalk.xml
 webtalk.jou
 webtalk.log
 webtalk_pn.xml
-a.out
+*.out
+*.pdf
