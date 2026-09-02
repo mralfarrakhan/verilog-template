@@ -72,11 +72,13 @@ bitstream project="default":
     #!/usr/bin/env bash
     PROJ_DIR="projects/{{project}}"
     F4PGA_DIR="${PROJ_DIR}/build/f4pga"
+    RTL_DIR="${PROJ_DIR}/rtl"
+    RTL_SRCS=$(find ${RTL_DIR} -name "*.v" -o -name "*.sv" 2>/dev/null | sed 's|^|/wrk/|' | tr '\n' ' ')
     
     mkdir -p ${F4PGA_DIR}
     docker run --rm -v "$PWD":/wrk -w /wrk/${F4PGA_DIR} {{f4pga_image}} \
         bash -c "source /usr/local/conda/etc/profile.d/conda.sh || true && \
-        f4pga -m xc7 -c xc7z010-clg400-1 -t {{project_name}} -p ../../xdc/top.xdc ../../rtl/top.v"
+        f4pga -m xc7 -c xc7z010-clg400-1 -t {{project_name}} -p /wrk/${PROJ_DIR}/xdc/top.xdc ${RTL_SRCS}"
     echo "Bitstream generated in ${F4PGA_DIR}/build/{{project_name}}.bit"
 
 # Clean all build artifacts
