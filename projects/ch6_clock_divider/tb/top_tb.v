@@ -4,17 +4,21 @@ module top_tb;
     reg clk;
     reg rst;
     wire clk_1hz;
-    wire [25:0] clk_count;
+    wire [25:0] clk_count_div;
+    wire tick;
+    wire [26:0] clk_count_tick;
 
     top uut (
         .clk(clk),
         .rst(rst),
         .clk_1hz(clk_1hz),
-        .clk_count(clk_count)
+        .clk_count_div(clk_count_div),
+        .tick(tick),
+        .clk_count_tick(clk_count_tick)
     );
 
     initial clk = 0;
-    always #5 clk = ~clk;
+    always #4 clk = ~clk;
 
     initial begin
         rst = 1;
