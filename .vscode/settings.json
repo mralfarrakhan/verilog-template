@@ -2,5 +2,7 @@
   "verilog.linting.linter": "iverilog",
   "verilog.linting.iverilog.runAtFileLocation": true,
   "verilog.linting.iverilog.arguments": "-y ../rtl -y .",
-  "editor.fontLigatures": false
+  "editor.fontLigatures": false,
+  "verilog.languageServer.svls.enabled": true,
+  "editor.formatOnSave": true
 }
