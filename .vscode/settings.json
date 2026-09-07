@@ -1,5 +1,6 @@
 {
   "verilog.linting.linter": "iverilog",
-  "verilog.linting.iverilog.arguments": "-y rtl",
+  "verilog.linting.iverilog.runAtFileLocation": true,
+  "verilog.linting.iverilog.arguments": "-y ../rtl -y .",
   "editor.fontLigatures": false
 }
