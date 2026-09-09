@@ -30,7 +30,7 @@ module top (clk, rstn, btn, w100, ret, sale);
             end
         endcase
 
-    always @(posedge clk or posedge rstn) begin
+    always @(posedge clk or negedge rstn) begin
         if (!rstn) st <= ST0;
         else st <= nst;
     end

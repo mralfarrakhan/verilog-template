@@ -17,68 +17,35 @@ module top_tb;
         .sale(sale)
     );
 
+    initial clk = 0;
+    always #5 clk = ~clk;
+
     initial begin
-        $dumpfile("top_tb.fst");
-        $dumpvars(0, top_tb);
-        
-        clk = 0;
         rstn = 0;
         btn = 0;
         w100 = 0;
         
-        #20;
-        rstn = 1;
-        
-        // Insert w100 to reach 300, then press button for sale
-        #10;
-        w100 = 1;
-        #10; w100 = 0;
-        
-        #20;
-        w100 = 1;
-        #10; w100 = 0;
-        
-        #20;
-        w100 = 1;
-        #10; w100 = 0;
-        
-        #20;
-        btn = 1;
-        #10; btn = 0;
-        
-        // Insert w100 to reach 200, then return
-        #20;
-        w100 = 1;
-        #10; w100 = 0;
-        
-        #20;
-        w100 = 1;
-        #10; w100 = 0;
-        
-        #20;
-        btn = 1;
-        #10; btn = 0;
-
-        // Insert w100 4 times
-        #20;
-        w100 = 1;
-        #10; w100 = 0;
-        
-        #20;
-        w100 = 1;
-        #10; w100 = 0;
-        
-        #20;
-        w100 = 1;
-        #10; w100 = 0;
-        
-        #20;
-        w100 = 1;
-        #10; w100 = 0;
-
-        #40;
-        $finish;
+        #7 rstn=1; 
+        #30 w100=1;//100 
+        #10 w100=0; 
+        #30 w100=1;//200
+        #10 w100=0; 
+        #30 w100=1;//300 
+        #10 w100=0; 
+        #30 btn=1;//sale 
+        #10 btn=0; 
+        #30 w100=1;//100 
+        #10 w100=0; 
+        #30 w100=1;//200 
+        #10 w100=0; 
+        #30 btn=1;//ret 
+        #10 btn=0; 
+      #100 $finish; 
     end
 
-    always #5 clk = ~clk;
+    initial begin
+        $dumpfile("top_tb.fst");
+        $dumpvars(0, top_tb);
+    end
+
 endmodule
