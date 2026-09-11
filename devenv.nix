@@ -4,8 +4,7 @@
   packages = with pkgs; [
     iverilog
     yosys
-    gtkwave
-    netlistsvg
     just
+    openfpgaloader
   ];
 }
