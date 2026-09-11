@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+import os
 
 # Tool variables
 IVERILOG = "iverilog"
@@ -13,6 +14,28 @@ GTKWAVE = "gtkwave"
 YOSYS = "yosys"
 NETLISTSVG = "netlistsvg"
 F4PGA_IMAGE = "ghcr.io/hdl/conda/f4pga/xc7/z010:latest"
+
+def load_env():
+    """Simple parser for .env file to avoid third-party dependencies."""
+    env = {}
+    env_path = Path(".env")
+    if env_path.exists():
+        with open(env_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, val = line.split("=", 1)
+                    env[key.strip()] = val.strip()
+    return env
+
+def get_current_branch():
+    """Gets the current git branch name."""
+    try:
+        result = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], 
+                                capture_output=True, text=True, check=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        return "main"
 
 def run_cmd(cmd, cwd=None):
     """Run a shell command, streaming output."""
@@ -125,23 +148,60 @@ def cmd_bitstream(args):
     rtl_dir = proj_dir / "rtl"
     
     rtl_srcs, _ = get_sources(rtl_dir)
-    # Rewrite paths to be absolute within the /wrk directory of the docker container
-    docker_rtl_srcs = [f"/wrk/{p}" for p in rtl_srcs]
+    # Rewrite paths to use forward slashes for the Linux container
+    docker_rtl_srcs = [f"/wrk/{p.replace(os.sep, '/')}" for p in rtl_srcs]
     
     f4pga_dir.mkdir(parents=True, exist_ok=True)
     
-    # In docker, we mount the current working directory to /wrk
-    docker_cmd = [
-        "docker", "run", "--rm", 
-        "-v", f"{Path.cwd()}:/wrk", 
-        "-w", f"/wrk/{f4pga_dir}", 
-        F4PGA_IMAGE,
-        "bash", "-c", 
-        f"source /usr/local/conda/etc/profile.d/conda.sh || true && f4pga -m xc7 -c xc7z010-clg400-1 -t {args.top} -p /wrk/{proj_dir}/xdc/{args.top}.xdc " + " ".join(docker_rtl_srcs)
-    ]
-    
-    run_cmd(docker_cmd)
-    print(f"Bitstream generated in {f4pga_dir}/build/{args.top}.bit")
+    f4pga_command = f"source /usr/local/conda/etc/profile.d/conda.sh || true && f4pga -m xc7 -c xc7z010-clg400-1 -t {args.top} -p /wrk/{proj_dir.as_posix()}/xdc/{args.top}.xdc " + " ".join(docker_rtl_srcs)
+
+    if args.remote:
+        env = load_env()
+        remote_host = env.get("REMOTE_HOST")
+        remote_dir = env.get("REMOTE_DIR")
+        remote_user = env.get("REMOTE_USER")
+        container_engine = env.get("CONTAINER_ENGINE", "docker")
+        
+        if not remote_host or not remote_dir:
+            print("Error: REMOTE_HOST and REMOTE_DIR must be set in .env for remote builds.")
+            sys.exit(1)
+            
+        ssh_target = f"{remote_user}@{remote_host}" if remote_user else remote_host
+        
+        print(f"Starting remote build on {ssh_target} in branch {args.branch}...")
+        
+        # Construct the remote SSH command
+        remote_script = (
+            f"cd {remote_dir} && "
+            f"git fetch && "
+            f"git checkout {args.branch} && "
+            f"git pull origin {args.branch} && "
+            f"{container_engine} run --rm -v {remote_dir}:/wrk -w /wrk/{f4pga_dir.as_posix()} {F4PGA_IMAGE} bash -c '{f4pga_command}'"
+        )
+        
+        run_cmd(["ssh", ssh_target, remote_script])
+        
+        # Ensure local build dir exists to receive the file
+        (f4pga_dir / "build").mkdir(parents=True, exist_ok=True)
+        
+        print("Build complete. Retrieving bitstream...")
+        remote_bitstream = f"{ssh_target}:{remote_dir}/{f4pga_dir.as_posix()}/build/{args.top}.bit"
+        run_cmd(["scp", remote_bitstream, str(f4pga_dir / "build")])
+        print(f"Bitstream retrieved to {f4pga_dir}/build/{args.top}.bit")
+        
+    else:
+        # In docker, we mount the current working directory to /wrk
+        docker_cmd = [
+            "docker", "run", "--rm", 
+            "-v", f"{Path.cwd()}:/wrk", 
+            "-w", f"/wrk/{f4pga_dir}", 
+            F4PGA_IMAGE,
+            "bash", "-c", 
+            f4pga_command
+        ]
+        
+        run_cmd(docker_cmd)
+        print(f"Bitstream generated in {f4pga_dir}/build/{args.top}.bit")
 
 def cmd_upload(args):
     proj_dir = Path("projects") / args.project
@@ -210,6 +270,8 @@ def main():
     
     # 'bitstream' command
     parser_bitstream = subparsers.add_parser("bitstream", parents=[parent_parser], help="Generate bitstream using F4PGA")
+    parser_bitstream.add_argument("--remote", action="store_true", help="Run bitstream generation on a remote server")
+    parser_bitstream.add_argument("--branch", default=get_current_branch(), help="Git branch to use on remote server")
     parser_bitstream.set_defaults(func=cmd_bitstream)
 
     # 'upload' command

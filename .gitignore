@@ -30,3 +30,4 @@ webtalk.log
 webtalk_pn.xml
 *.out
 *.pdf
+.env
