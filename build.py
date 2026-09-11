@@ -15,6 +15,19 @@ YOSYS = "yosys"
 NETLISTSVG = "netlistsvg"
 F4PGA_IMAGE = "ghcr.io/hdl/conda/f4pga/xc7/z010:latest"
 
+def load_env():
+    """Simple parser for .env file to avoid third-party dependencies."""
+    env = {}
+    env_path = Path(".env")
+    if env_path.exists():
+        with open(env_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, val = line.split("=", 1)
+                    env[key.strip()] = val.strip()
+    return env
+
 def run_cmd(cmd, cwd=None):
     """Run a shell command, streaming output."""
     print(f"Running: {' '.join(cmd)}")
@@ -133,9 +146,12 @@ def cmd_bitstream(args):
     
     f4pga_command = f"source /usr/local/conda/etc/profile.d/conda.sh || true && f4pga -m xc7 -c xc7z010-clg400-1 -t {args.top} -p /wrk/{proj_dir.as_posix()}/xdc/{args.top}.xdc " + " ".join(docker_rtl_srcs)
 
-    # In docker, we mount the current working directory to /wrk
+    env = load_env()
+    container_engine = env.get("CONTAINER_ENGINE", "docker")
+
+    # In docker/podman, we mount the current working directory to /wrk
     docker_cmd = [
-        "docker", "run", "--rm", 
+        container_engine, "run", "--rm", 
         "-v", f"{Path.cwd()}:/wrk", 
         "-w", f"/wrk/{f4pga_dir}", 
         F4PGA_IMAGE,
