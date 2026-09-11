@@ -144,7 +144,7 @@ def cmd_bitstream(args):
     
     f4pga_dir.mkdir(parents=True, exist_ok=True)
     
-    f4pga_command = f"source /usr/local/conda/etc/profile.d/conda.sh || true && f4pga -m xc7 -c xc7z010-clg400-1 -t {args.top} -p /wrk/{proj_dir.as_posix()}/xdc/{args.top}.xdc " + " ".join(docker_rtl_srcs)
+    f4pga_command = f"source /usr/local/etc/profile.d/conda.sh && conda activate xc7 && f4pga -m xc7 -c xc7z010-clg400-1 -t {args.top} -p /wrk/{proj_dir.as_posix()}/xdc/{args.top}.xdc " + " ".join(docker_rtl_srcs)
 
     env = load_env()
     container_engine = env.get("CONTAINER_ENGINE", "docker")
@@ -152,8 +152,8 @@ def cmd_bitstream(args):
     # In docker/podman, we mount the current working directory to /wrk
     docker_cmd = [
         container_engine, "run", "--rm", 
-        "-v", f"{Path.cwd()}:/wrk", 
-        "-w", f"/wrk/{f4pga_dir}", 
+        "-v", f"{Path.cwd().as_posix()}:/wrk", 
+        "-w", f"/wrk/{f4pga_dir.as_posix()}", 
         F4PGA_IMAGE,
         "bash", "-c", 
         f4pga_command
